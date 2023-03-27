@@ -1,1 +1,1 @@
-# Remittances_and_Higher_Education_Research
+This is a public repository to upload the Python source code as well as the data used for my research paper named 'The Role of Remittances and Youth Unemployment Rates in University Enrollment: Evidence from Post-Soviet States'.
