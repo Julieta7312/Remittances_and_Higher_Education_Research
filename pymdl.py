@@ -13,7 +13,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 
-# File paths containg the raw data for the variables used in the research.
+# File paths for the variables' raw data
 enr_file = '../data/tertiary_school_enrollment.csv'
 exp_file = '../data/household_expenditure.csv'
 uem_file = '../data/youth_unem_rate.csv'
@@ -32,7 +32,7 @@ print('''********************************* START: READ & TIDY UP THE DATA ******
 ''' data1. Annual tertiary school enrollment for all the countries (last updated: 2021/06/30) 
         : World Bank tertiary school enrollment data (% gross) '''
 
-enr = pd.read_csv(enr_file, sep=',') # The file contains the annual tertiary school enrollment data for the world's countries from year 1960 onwards. 
+enr = pd.read_csv(enr_file, sep=',')
 enr.columns = enr.iloc[3]
 enr = enr.iloc[4:] \
          .drop(['Country Code', 'Indicator Name', 'Indicator Code'], axis = 1)
@@ -220,7 +220,7 @@ sns.set_context("paper", font_scale=1.2)
 splot = sns.pairplot(panel_df[reg_var_list+["Country"]], hue="Country", palette="icefire", grid_kws={"despine": False})
 plt.show()
 
-# Check the correlation between the variables with a heatmap.
+# Check the correlation between the variables with a heatmap
 sns.set(font_scale=1.4)
 htmp = sns.heatmap(panel_df[panel_df.columns[:6]].corr(), vmin=-1, vmax=1, annot=True, cmap="vlag")
 plt.show()
@@ -262,8 +262,7 @@ print(''' __ START: Pooled OLS Model ____''')
 
 pooled_ols_mdl = sm.OLS(endg, exog[reg_var_list[1:]])
 fitted_pooled_ols_mdl = pooled_ols_mdl.fit(cov_type=c_type)
-displayhook(fitted_pooled_ols_mdl.summary()) # This displays the pooled OLS model.
-
+displayhook(fitted_pooled_ols_mdl.summary())
 print(''' ____ END: Pooled OLS Model ____''')
 
 
