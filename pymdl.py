@@ -1,4 +1,4 @@
-# from six import text_type
+# import the packages
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.stats.diagnostic import het_breuschpagan
 from sklearn.cross_decomposition import PLSRegression
@@ -32,7 +32,7 @@ print('''********************************* START: READ & TIDY UP THE DATA ******
 ''' data1. Annual tertiary school enrollment for all the countries (last updated: 2021/06/30) 
         : World Bank tertiary school enrollment data (% gross) '''
 
-enr = pd.read_csv(enr_file, sep=',') # The csv file contains the annual tertiary school enrollment data for the world's countries from year 1960 onwards. 
+enr = pd.read_csv(enr_file, sep=',') # The file contains the annual tertiary school enrollment data for the world's countries from year 1960 onwards. 
 enr.columns = enr.iloc[3]
 enr = enr.iloc[4:] \
          .drop(['Country Code', 'Indicator Name', 'Indicator Code'], axis = 1)
@@ -45,7 +45,7 @@ enr = enr.rename(columns={'Country Name' : 'Country'}) \
 
 ps_enr = enr[ps_ctry].reset_index().melt(id_vars=['index'])
 ps_enr.columns = ['Date', 'Country', 'enr_rate']
-ps_enr['enr_rate'] = ps_enr['enr_rate'].apply(lambda x : float(x) if x!=".." else np.nan) / 100 # /100 to convert percentages to actual numbers (e.g. 3.15 (%) to 0.0315)
+ps_enr['enr_rate'] = ps_enr['enr_rate'].apply(lambda x : float(x) if x!=".." else np.nan) / 100
 
 ''' data2. Household expenditure for the Post-Soviet countries as a depedent variable (in USD) '''
 
@@ -78,7 +78,7 @@ remit.columns = [ remit.columns[0] ] + [ pd.to_datetime(year, format='%Y') for y
         : from year 2000 onwards the enrolment dataframe has 16 total missing values '''
 
 ps_remit = remit[remit['Date'].apply(lambda c : c in ps_ctry)].melt(id_vars='Date', value_name='rem $', var_name='Dates')
-ps_remit['rem $'] = ps_remit['rem $'] * 1000000 # For converting Million USD to USD
+ps_remit['rem $'] = ps_remit['rem $'] * 1000000
 ps_remit.columns = ['Country', 'Date', 'rem $']
 
 ''' data5. Population (World)
@@ -161,7 +161,7 @@ panel_df['( PPP - PPP_rem )_pc $'] = panel_df['PPP_pc $'] - ( panel_df['PPP_rem 
 # PPP per capita - PPP remittance per capita in $=USD lagged by a year
 panel_df['( PPP - PPP_rem )_pc_{t-1} $'] = panel_df['( PPP - PPP_rem )_pc $'].shift(ppp_lag)
 
-# # PPP per capita - PPP remittance per capita in $=USD lagged by a year, and centralized by all country, divided by 1000 to convert to thousands of dollars. 
+# PPP per capita - PPP remittance per capita in $=USD lagged by a year, and centralized by all countries, divided by 1000 to convert to thousands of dollars. 
 panel_df['( PPP - PPP_rem )_pc_{t-1} cent,$'] = ( panel_df['( PPP - PPP_rem )_pc_{t-1} $'] - panel_df['( PPP - PPP_rem )_pc_{t-1} $'].mean() ) / 1000 
 
 
@@ -194,7 +194,7 @@ ppp_reg_name  = '( PPP - PPP_rem )_pc_{t-1} cent,$'
 reg_var_list  = [enr_reg_name, rem_reg_name, ppp_reg_name, unem_reg_name]
 sig = 3 # clip the data if it's more than 3 standard deviation apart from the mean ( lower = mean - 3 standard deviation, upper = mean + standard deviation ). 
 
-''' winsorize ''' # Remove the outliers
+''' winsorize '''
 for rn in reg_var_list: 
         panel_df[rn] = panel_df[rn].clip( lower = panel_df[rn].mean() - (sig * panel_df[rn].std()), \
                 upper = (sig * panel_df[rn].std()) + panel_df[rn].mean() )
@@ -202,7 +202,7 @@ for rn in reg_var_list:
 panel_df = panel_df[ ['Date', 'Country'] + reg_var_list ]
 panel_df = panel_df.query( " Date >= '" + processed_from_date + "'" )
 
-# Generate dummy variable for each country. 
+# Generate a dummy variable for each country. 
 for ctry in ps_ctry: 
         panel_df[ ctry ] = ( panel_df['Country'] == ctry ).apply( lambda x : int(x) )
 
@@ -214,22 +214,20 @@ displayhook(pd.concat([panel_df.describe(), pd.DataFrame(panel_df.skew(), column
 
 
 ''' PLOTS '''
-# Check linear relationship between the dependent and independent variables, scatterplot
+# Check the existence of a linear relationship between the dependent and independent variables with a scatterplot
 sns.set(style='whitegrid', rc={"grid.linewidth": 0.1}, font_scale=2)
 sns.set_context("paper", font_scale=1.2) 
 splot = sns.pairplot(panel_df[reg_var_list+["Country"]], hue="Country", palette="icefire", grid_kws={"despine": False})
 plt.show()
 
-# Check correlation between the variables with the heatmap.
+# Check the correlation between the variables with a heatmap.
 sns.set(font_scale=1.4)
 htmp = sns.heatmap(panel_df[panel_df.columns[:6]].corr(), vmin=-1, vmax=1, annot=True, cmap="vlag")
-# htmp.set_xticklabels(htmp.get_xmajorticklabels(), fontsize=16)
-# htmp.set_yticklabels(htmp.get_ymajorticklabels(), fontsize=16)
 plt.show()
 ''' PLOTS '''
 
 
-panel_df = panel_df.set_index(['Country', 'Date']) # Remove NaN values. 
+panel_df = panel_df.set_index(['Country', 'Date'])
 
 print('''*********************************** END: DATA PROCESSING *********************************''')
 
@@ -311,10 +309,7 @@ print(''' __ START: Fixed Effect Model ____''')
 
 fixed_effect_mdl = sm.OLS(endg, exog)
 fitted_fixed_effect_mdl = fixed_effect_mdl.fit(cov_type=c_type)
-displayhook(fitted_fixed_effect_mdl.summary()) # This displays the fixed effect model. 
-# # this replicates the upper result.
-# pls = sm.regression.linear_model.OLSResults(fixed_effect_mdl, fitted_fixed_effect_mdl.params, normalized_cov_params=fixed_effect_mdl.normalized_cov_params, cov_type=c_type)
-# print(pls.summary()) 
+displayhook(fitted_fixed_effect_mdl.summary())
 
 print(''' ____ END: Fixed Effect Model ____''')
 
@@ -373,7 +368,7 @@ print(''' ____ END: Verifying Algorithm ____''')
 
 print(''' __ START: VIF (Variance Inflation Factor) ____''')
 
-n_indeps = fixed_effect_mdl.exog.shape[1] # Column number of independent variables
+n_indeps = fixed_effect_mdl.exog.shape[1]
 vifs = [ variance_inflation_factor(fixed_effect_mdl.exog, i) for i in range(0, n_indeps) ]
 vifs_df = pd.DataFrame(vifs, index=fixed_effect_mdl.exog_names, columns=["VIF"])
 vifs_df.index.name = "Independent variables"
@@ -389,9 +384,6 @@ plt.gca().set_title("VIF for each independent variable")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
-# np.dot(np.dot(norm_cov_params, fixed_effect_mdl.wexog.T), fixed_effect_mdl.endog) # This is equal to the regression coefficient beta
-# add = fixed_effect_mdl.fit()
-# add.summary()
 print(''' ____ END: VIF (Variance Inflation Factor) ____''')
 
 
@@ -432,9 +424,6 @@ for ts in test_size:
                 mean_fitted_ridge_scores = np.mean(fitted_ridge_scores)
                 fitted_ridge_coefs = list(np.mean(fitted_ridge_coefs, axis=0))
 
-                # fitted_ridge.coef_
-                # ridge = RidgeCV(alphas=[granularity * g], fit_intercept=False, normalize=False, cv=rs_final)
-                # fitted_ridge = ridge.fit(exog, endg)
                 ridgeCV_alphas.append(granularity * g)
                 ridgeCV_best_score.append(mean_fitted_ridge_scores)
                 ridgeCV_coefs.append(fitted_ridge_coefs)
@@ -549,7 +538,7 @@ def results_summary_to_dataframe(results):
                                "t-Stat":tvals
                                 })
 
-    #Reordering...
+    # Reordering
     results_df = results_df[["Coef","p-value","t-Stat"]]
     return results_df.round(decimals=3)
 
@@ -566,19 +555,7 @@ for obta, ts in zip(opt_betas, test_size):
 dfs_ridge_agg = pd.concat(dfs_ridge_agg, axis=1)
 print(dfs_ridge_agg.to_latex())
 
-'''Beta plots'''
-
 ''' PLOTS '''
-
-"""
-
-fitted_ridge_fixed_effect_mdl_final = fixed_effect_mdl.fit_regularized(L1_wt=0, alpha=0.0007, start_params=fitted_fixed_effect_mdl.params)
-final_res_ridge = sm.regression.linear_model.OLSResults(fixed_effect_mdl,
-                                                        fitted_ridge_fixed_effect_mdl_final.params,
-                                                        fixed_effect_mdl.normalized_cov_params,
-                                                        cov_type=c_type)
-displayhook(final_res_ridge.summary())
-"""
 
 print(''' ____ END: Ridge regression ____''')
 
@@ -644,6 +621,7 @@ sns.lineplot(data=pls_betas_dummy_fac, x='The number of independent scores', y='
 # plt.gca().set_title("Beta for every country dummy variable in accordance with the number of independent scores")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
+
 ''' PLOTS '''
 
 pls_mdl = PLSRegression(n_components=8, max_iter=10000, scale=False, tol=1e-10)
@@ -676,11 +654,3 @@ np.shape(res.x_loadings_)
 np.shape(res.x_weights_)
 
 print('''*********************************** END: FIXED EFFECT MODEL, RIDGE REGRESSION, PARTIAL LEAST SQUARES REGRESSION *********************************''')
-
-
-
-from sklearn.decomposition import PCA
-mdl = PCA(n_components=10).fit(exog)
-print(np.sum( exog - np.dot(mdl.fit_transform(exog), mdl.components_) - exog.mean() ))
-print(np.dot(exog- exog.mean(), mdl.components_.T)  - mdl.fit_transform(exog))
-np.std(mdl.components_, axis=1)
