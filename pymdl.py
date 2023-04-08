@@ -1,4 +1,4 @@
-# import the packages
+# Import the packages
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.stats.diagnostic import het_breuschpagan
 from sklearn.cross_decomposition import PLSRegression
@@ -120,6 +120,8 @@ print('''*********************************** END: READ & TIDY UP THE DATA ******
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+
+
 print('''********************************* START: DATA PROCESSING *********************************''')
 
 rem_lag = 1
@@ -194,7 +196,8 @@ ppp_reg_name  = '( PPP - PPP_rem )_pc_{t-1} cent,$'
 reg_var_list  = [enr_reg_name, rem_reg_name, ppp_reg_name, unem_reg_name]
 sig = 3 # clip the data if it's more than 3 standard deviation apart from the mean ( lower = mean - 3 standard deviation, upper = mean + standard deviation ). 
 
-''' winsorize '''
+''' Winsorize '''
+
 for rn in reg_var_list: 
         panel_df[rn] = panel_df[rn].clip( lower = panel_df[rn].mean() - (sig * panel_df[rn].std()), \
                 upper = (sig * panel_df[rn].std()) + panel_df[rn].mean() )
@@ -212,8 +215,8 @@ panel_df = panel_df.query("not (Date == '2010-01-01' and Country == 'Uzbekistan'
 
 displayhook(pd.concat([panel_df.describe(), pd.DataFrame(panel_df.skew(), columns=["skew"]).T], axis=0).T)
 
-
 ''' PLOTS '''
+
 # Check the existence of a linear relationship between the dependent and independent variables with a scatterplot
 sns.set(style='whitegrid', rc={"grid.linewidth": 0.1}, font_scale=2)
 sns.set_context("paper", font_scale=1.2) 
@@ -224,8 +227,8 @@ plt.show()
 sns.set(font_scale=1.4)
 htmp = sns.heatmap(panel_df[panel_df.columns[:6]].corr(), vmin=-1, vmax=1, annot=True, cmap="vlag")
 plt.show()
-''' PLOTS '''
 
+''' PLOTS '''
 
 panel_df = panel_df.set_index(['Country', 'Date'])
 
@@ -278,22 +281,22 @@ pool_est_resid_exog = pd.DataFrame(pool_est_resid).merge(exog, left_index=True, 
 sns.set(style='whitegrid', rc={"grid.linewidth": 0.1}, font_scale=1.1)
 
 sns.scatterplot(data=pool_est_resid_exog, x="Pooled OLS estimated enrollment rate", y='residual', hue='residual', palette="icefire", legend=False)
-# plt.gca().set_title("Heteroscedasticity among Pooled OLS's fitted values and it's residual")
+plt.gca().set_title("Heteroscedasticity among Pooled OLS's fitted values and it's residual")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
 sns.scatterplot(data=pool_est_resid_exog, x=rem_reg_name, y='residual', hue='residual', palette="icefire", legend=False)
-# plt.gca().set_title("Heteroscedasticity among the remittance and the Pooled OLS's residual")
+plt.gca().set_title("Heteroscedasticity among the remittance and the Pooled OLS's residual")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
 sns.scatterplot(data=pool_est_resid_exog, x=ppp_reg_name, y='residual', hue='residual', palette="icefire", legend=False)
-# plt.gca().set_title("Heteroscedasticity among the PPP and the Pooled OLS's residual")
+plt.gca().set_title("Heteroscedasticity among the PPP and the Pooled OLS's residual")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
 sns.scatterplot(data=pool_est_resid_exog, x=unem_reg_name, y='residual', hue='residual', palette="icefire", legend=False)
-# plt.gca().set_title("Heteroscedasticity among the youth unemployment and the Pooled OLS's residual")
+plt.gca().set_title("Heteroscedasticity among the youth unemployment and the Pooled OLS's residual")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
@@ -313,6 +316,7 @@ displayhook(fitted_fixed_effect_mdl.summary())
 print(''' ____ END: Fixed Effect Model ____''')
 
 
+
 print(''' __ START: Fixed Effect Model: Breusch-Pagan-Test ____''')
 
 fitted_fixed_effect_estimations = ( fitted_fixed_effect_mdl.params[:3] * panel_df[reg_var_list[1:]] ).sum(axis=1)
@@ -322,22 +326,22 @@ est_resid = pd.DataFrame(fitted_fixed_effect_estimations, columns=["Fixed effect
 est_resid_exog = pd.DataFrame(est_resid).merge(exog, left_index=True, right_index=True)
 
 sns.scatterplot(data=est_resid_exog, x="Fixed effect estimated enrollment rate", y='residual', hue='residual', palette="icefire", legend=False)
-# plt.gca().set_title("Heteroscedasticity among Fixed effect model's fitted values and it's residual")
+plt.gca().set_title("Heteroscedasticity among Fixed effect model's fitted values and it's residual")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
 sns.scatterplot(data=est_resid_exog, x=rem_reg_name, y='residual', hue='residual', palette="icefire", legend=False)
-# plt.gca().set_title("Heteroscedasticity among the remittance and the Fixed effect model's residual")
+plt.gca().set_title("Heteroscedasticity among the remittance and the Fixed effect model's residual")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
 sns.scatterplot(data=est_resid_exog, x=ppp_reg_name, y='residual', hue='residual', palette="icefire", legend=False)
-# plt.gca().set_title("Heteroscedasticity among the PPP and the Fixed effect model's residual")
+plt.gca().set_title("Heteroscedasticity among the PPP and the Fixed effect model's residual")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
 sns.scatterplot(data=est_resid_exog, x=unem_reg_name, y='residual', hue='residual', palette="icefire", legend=False)
-# plt.gca().set_title("Heteroscedasticity among the youth unemployment and the Fixed effect model's residual")
+plt.gca().set_title("Heteroscedasticity among the youth unemployment and the Fixed effect model's residual")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
@@ -373,10 +377,10 @@ vifs_df = pd.DataFrame(vifs, index=fixed_effect_mdl.exog_names, columns=["VIF"])
 vifs_df.index.name = "Independent variables"
 displayhook(vifs_df)
 ''' One recommendation is that if VIF is greater than 5,
-    then the independent variable is highly collinear with the other explanatory(=independent) variables, 
+    then the independent variable is highly collinear with other explanatory(=independent) variables, 
     and the parameter(=coefficient=Beta) estimates will have large standard errors because of this.
     In our model, "( PPP - PPP_rem )_pc_{t-1} cent,$" has the VIF over 5. 
-    So, we can conclude that "( PPP - PPP_rem )_pc_{t-1} cent,$" is highly correlated with the other independent variables.
+    So, we can conclude that "( PPP - PPP_rem )_pc_{t-1} cent,$" is highly correlated with other independent variables.
 '''
 barplt = sns.barplot(data=vifs_df.reset_index(), x="VIF", y="Independent variables", hue="Independent variables", palette="icefire", dodge=False)
 plt.gca().set_title("VIF for each independent variable")
@@ -475,48 +479,48 @@ for ts in test_size:
         '''R-squared plot'''
 
         sns.lineplot(data=ridge_df_rsqr , x=ridge_idx_name, y='R-squared of the ridge regression', color="black")
-        # plt.gca().set_title("R-squared in accordance with ridge regression penalties")
+        plt.gca().set_title("R-squared in accordance with ridge regression penalties")
         plt.show()
 
         '''Beta plots'''
 
         sns.lineplot(data=ridgeCV_coefs[[reg_var_list[1]+"_Beta"]] , x=ridge_idx_name, y=reg_var_list[1]+"_Beta", color="red")
-        # plt.gca().set_title("Coefficient of the remittance in accordance with ridge regression penalties")
+        plt.gca().set_title("Coefficient of the remittance in accordance with ridge regression penalties")
         plt.show()
 
         sns.lineplot(data=ridgeCV_coefs[[reg_var_list[2]+"_Beta"]] , x=ridge_idx_name, y=reg_var_list[2]+"_Beta", color="blue")
-        # plt.gca().set_title("Coefficient of the PPP in accordance with ridge regression penalties")
+        plt.gca().set_title("Coefficient of the PPP in accordance with ridge regression penalties")
         plt.show()
 
         sns.lineplot(data=ridgeCV_coefs[[reg_var_list[3]+"_Beta"]] , x=ridge_idx_name, y=reg_var_list[3]+"_Beta", color="green")
-        # plt.gca().set_title("Coefficient of the unemployment rate in accordance with ridge regression penalties")
+        plt.gca().set_title("Coefficient of the unemployment rate in accordance with ridge regression penalties")
         plt.show()
 
         ridgeCV_ctry_coefs_melted = ridgeCV_coefs[[ var_name + "_Beta" for var_name in ps_ctry]].reset_index().melt(id_vars=[ridge_idx_name], value_vars=[ var_name + "_Beta" for var_name in ps_ctry])
         ridgeCV_ctry_coefs_melted.columns = [ ridge_idx_name, 'Country', 'Ridge estimated Beta (Coefficient)' ]
         sns.lineplot(data=ridgeCV_ctry_coefs_melted, x=ridge_idx_name, y='Ridge estimated Beta (Coefficient)', hue='Country', palette="mako_r")
-        # plt.gca().set_title("Beta for every country dummy variable in accordance with ridge regression penalties")
+        plt.gca().set_title("Beta for every country dummy variable in accordance with ridge regression penalties")
         plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
         plt.show()
 
         '''t-Stat plots'''
 
         sns.lineplot(data=ridgeCV_tstats[[reg_var_list[1]+"_t-Stat"]] , x=ridge_idx_name, y=reg_var_list[1]+"_t-Stat", color="red")
-        # plt.gca().set_title("t-Stat of the remittance in accordance with ridge regression penalties")
+        plt.gca().set_title("t-Stat of the remittance in accordance with ridge regression penalties")
         plt.show()
 
         sns.lineplot(data=ridgeCV_tstats[[reg_var_list[2]+"_t-Stat"]] , x=ridge_idx_name, y=reg_var_list[2]+"_t-Stat", color="blue")
-        # plt.gca().set_title("t-Stat of the PPP in accordance with ridge regression penalties")
+        plt.gca().set_title("t-Stat of the PPP in accordance with ridge regression penalties")
         plt.show()
 
         sns.lineplot(data=ridgeCV_tstats[[reg_var_list[3]+"_t-Stat"]] , x=ridge_idx_name, y=reg_var_list[3]+"_t-Stat", color="green")
-        # plt.gca().set_title("t-Stat of the unemployment rate in accordance with ridge regression penalties")
+        plt.gca().set_title("t-Stat of the unemployment rate in accordance with ridge regression penalties")
         plt.show()
 
         ridgeCV_ctry_tstats_melted = ridgeCV_tstats[[ var_name + "_t-Stat" for var_name in ps_ctry]].reset_index().melt(id_vars=[ridge_idx_name], value_vars=[ var_name + "_t-Stat" for var_name in ps_ctry])
         ridgeCV_ctry_tstats_melted.columns = [ ridge_idx_name, 'Country', 'Ridge t-Stat' ]
         sns.lineplot(data=ridgeCV_ctry_tstats_melted, x=ridge_idx_name, y='Ridge t-Stat', hue='Country', palette="mako_r")
-        # plt.gca().set_title("t-Stat for every country dummy variable in accordance with ridge regression penalties")
+        plt.gca().set_title("t-Stat for every country dummy variable in accordance with ridge regression penalties")
         plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
         plt.show()
         print("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||")
@@ -585,7 +589,7 @@ for n_comp in range(1, num_possible_comp +1, 1):
 
 r_squared = pd.DataFrame(np.array([r_squared, indices]), index=["R-squared", "The number of independent scores"]).T
 sns.lineplot(data=r_squared, x='The number of independent scores', y='R-squared', color="black")
-# plt.gca().set_title("R-squared in accordance with the number of independent scores")
+plt.gca().set_title("R-squared in accordance with the number of independent scores")
 plt.show()
 
 pls_tstats = pd.DataFrame(pls_tstats)
@@ -595,13 +599,13 @@ pls_tstats = pls_tstats.melt(id_vars=["The number of independent scores"], var_n
 ''' PLOTS '''
 pls_tstats_three_fac = pls_tstats[pls_tstats['indep var'].isin(reg_var_list[1:])]
 sns.lineplot(data=pls_tstats_three_fac, x='The number of independent scores', y='t-stat', hue='indep var', palette="icefire")
-# plt.gca().set_title("T-stat for the remittance, the PPP, and the unemployment rate in accordance with the number of independent scores")
+plt.gca().set_title("T-stat for the remittance, the PPP, and the unemployment rate in accordance with the number of independent scores")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
 pls_tstats_dummy_fac = pls_tstats[pls_tstats['indep var'].isin(ps_ctry)]
 sns.lineplot(data=pls_tstats_dummy_fac, x='The number of independent scores', y='t-stat', hue='indep var', palette="mako_r")
-# plt.gca().set_title("T-stat for every country dummy variable in accordance with the number of independent scores")
+plt.gca().set_title("T-stat for every country dummy variable in accordance with the number of independent scores")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
@@ -611,13 +615,13 @@ pls_betas = pls_betas.melt(id_vars=["The number of independent scores"], var_nam
 
 pls_betas_three_fac = pls_betas[pls_betas['indep var'].isin(reg_var_list[1:])]
 sns.lineplot(data=pls_betas_three_fac, x='The number of independent scores', y='PLS Beta (Coefficient)', hue='indep var', palette="icefire")
-# plt.gca().set_title("Beta for the remittance, the PPP, and the unemployment rate in accordance with the number of independent scores")
+plt.gca().set_title("Beta for the remittance, the PPP, and the unemployment rate in accordance with the number of independent scores")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
 pls_betas_dummy_fac = pls_betas[pls_betas['indep var'].isin(ps_ctry)]
 sns.lineplot(data=pls_betas_dummy_fac, x='The number of independent scores', y='PLS Beta (Coefficient)', hue='indep var', palette="mako_r")
-# plt.gca().set_title("Beta for every country dummy variable in accordance with the number of independent scores")
+plt.gca().set_title("Beta for every country dummy variable in accordance with the number of independent scores")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
@@ -628,7 +632,7 @@ res = pls_mdl.fit(exog, endg)
 print(res.get_params())
 pls_beta = pd.DataFrame(res.coef_, index=fitted_fixed_effect_mdl.params.index, columns=["Beta:PLS"])
 
-# Comparing the Betas estimated by the Fixed Effect Model and the Partial Least Squares.
+# Comparing the Betas estimated by the Fixed Effect Model and the Partial Least Squares
 betaCompare = pd.concat([pd.DataFrame(fitted_fixed_effect_mdl.params, columns=["Beta:FixedEffectMdl"]), pls_beta], axis=1)
 displayhook(betaCompare)
 print(betaCompare.round(3).to_latex())
