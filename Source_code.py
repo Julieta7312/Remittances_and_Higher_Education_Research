@@ -14,9 +14,9 @@ import pandas as pd
 import numpy as np
 
 # File paths containg the raw data for the variables used in the research.
-enr_file = '../data/tertiary_school_enrollment.csv'
+enr_file = '../data/tertiary_school_enrollment_rate.csv'
 exp_file = '../data/household_expenditure.csv'
-uem_file = '../data/youth_unem_rate.csv'
+uem_file = '../data/youth_unemployment_rate.csv'
 rem_file = '../data/inward_remittance_flows.xlsx'
 pop_file = '../data/total_world_population.csv'
 ppp_file = '../data/ppp_per_capita.csv'
