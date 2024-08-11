@@ -126,7 +126,7 @@ rem_lag = 1
 ppp_lag = 1
 uem_lag = 1
 
-''' PPP and remittance '''
+''' Remittance '''
 
 # hhld_exp_pc = household expenditure per capita = household expenditure / population
 panel_df['hhld_exp_pc $'] = panel_df['hhld_exp $'] / panel_df['pop'] 
@@ -144,28 +144,29 @@ sns.lineplot(data=panel_df, x='Date', y="rem/GDP", hue="Country", palette="icefi
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 
-# unemployment rate plot
-sns.lineplot(data=panel_df, x='Date', y="unem_rate", hue="Country", palette="icefire")
-plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-plt.show()
-
 # PPP remittance per capita lagged by 1 year
 panel_df['PPP_rem_pc_{t-1} $'] = ( panel_df['PPP_rem $'] / panel_df['pop'] ).shift(rem_lag) 
 
 # PPP remittance per capita lagged by 1 year, centered by every country, divided by 1000 to convert to thousands of dollars. 
 panel_df['PPP_rem_pc_{t-1} cent,$'] = ( panel_df['PPP_rem_pc_{t-1} $'] - panel_df['PPP_rem_pc_{t-1} $'].mean() ) / 1000 
 
+''' PPP (Purchasing power parity) '''
 # PPP per capita - PPP remittance per capita in $=USD
 panel_df['( PPP - PPP_rem )_pc $'] = panel_df['PPP_pc $'] - ( panel_df['PPP_rem $'] / panel_df['pop'] )
 
 # PPP per capita - PPP remittance per capita in $=USD lagged by a year
 panel_df['( PPP - PPP_rem )_pc_{t-1} $'] = panel_df['( PPP - PPP_rem )_pc $'].shift(ppp_lag)
 
-# # PPP per capita - PPP remittance per capita in $=USD lagged by a year, and centralized by all country, divided by 1000 to convert to thousands of dollars. 
+# PPP per capita - PPP remittance per capita in $=USD lagged by a year, and centralized by all country, divided by 1000 to convert to thousands of dollars. 
 panel_df['( PPP - PPP_rem )_pc_{t-1} cent,$'] = ( panel_df['( PPP - PPP_rem )_pc_{t-1} $'] - panel_df['( PPP - PPP_rem )_pc_{t-1} $'].mean() ) / 1000 
 
 
 ''' Unemployment rate '''
+
+# unemployment rate plot
+sns.lineplot(data=panel_df, x='Date', y="unem_rate", hue="Country", palette="icefire")
+plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+plt.show()
 
 panel_df['unem_rate_{t-1} cent'] = ( panel_df['unem_rate'] - panel_df['unem_rate'].mean() ).shift(uem_lag)
 
